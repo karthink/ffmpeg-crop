@@ -19,7 +19,7 @@
 
 (defun ffmpeg-crop--read-file (prompt initial-input history)
   (interactive)
-  (read-file-name prompt nil nil t initial-input nil))
+  (read-file-name prompt default-directory nil t initial-input nil))
 
 (transient-define-argument ffmpeg-crop--vf ()
   "Ending at time"
@@ -81,6 +81,8 @@
              (list "-an" (expand-file-name outfile))))
     (ffmpeg-crop--next)))
 
+;; Prefix commands
+
 ;;;###autoload
 (transient-define-prefix ffmpeg-crop (infiles)
   "Downsample a video and process it."
@@ -99,12 +101,12 @@
   (interactive (list (completing-read-multiple
                       "Videos: "
                       #'completion--file-name-table
-                      nil t)))
+                      nil t (abbreviate-file-name default-directory))))
   (setq ffmpeg-crop-infiles infiles)
   (let ((infile (car infiles)))
     (start-process (concat "mpv " (file-name-base infile))
                    (concat "mpv " (file-name-base infile))
-                   "/usr/bin/mpv"
+                   "/usr/bin/mpv" "--osd-level=3"
                    (expand-file-name infile)))
   (transient-setup 'ffmpeg-crop))
 
