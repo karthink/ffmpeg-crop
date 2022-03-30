@@ -106,7 +106,7 @@
   (let ((infile (car infiles)))
     (start-process (concat "mpv " (file-name-base infile))
                    (concat "mpv " (file-name-base infile))
-                   "/usr/bin/mpv" "--osd-level=3"
+                   "/usr/bin/mpv" "--osd-level=3" "--mute=yes"
                    (expand-file-name infile)))
   (transient-setup 'ffmpeg-crop))
 
