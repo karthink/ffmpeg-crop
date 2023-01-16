@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (require 'transient)
 (require 'seq)
 
@@ -61,24 +62,32 @@
                                       (substring arg 3)))
                            args))
          (outfile (replace-regexp-in-string
-                  "\\.mp4$"
-                  (concat "_small"
-                          (if (and ffmpeg-crop-description
-                                   (> (length ffmpeg-crop-description) 0))
-                              (concat "_" 
-                                      (string-join
-                                       (split-string ffmpeg-crop-description)
-                                       "_"))
-                            "")
-                          ".mp4")
-                  infile)))
-    (apply #'start-process
-     "ffmpeg" "ffmpeg-crop" "/usr/bin/ffmpeg"
-     (append (mapcan (lambda (arg)
-                       (string-match "^\\([^[:space:]]+\\) \\(.*\\)" arg)
-                       (list (match-string 1 arg) (match-string 2 arg)))
-                     args)
-             (list "-an" (expand-file-name outfile))))
+                   "\\.mp4$"
+                   (concat "_small"
+                           (if (and ffmpeg-crop-description
+                                    (> (length ffmpeg-crop-description) 0))
+                               (concat "_" 
+                                       (string-join
+                                        (split-string ffmpeg-crop-description)
+                                        "_"))
+                             "")
+                           ".mp4")
+                   infile))
+         (ffmpeg-proc 
+          
+          (apply #'start-process
+                 "ffmpeg" "ffmpeg-crop" "/usr/bin/ffmpeg"
+                 (append (mapcan (lambda (arg)
+                                   (string-match "^\\([^[:space:]]+\\) \\(.*\\)" arg)
+                                   (list (match-string 1 arg) (match-string 2 arg)))
+                                 args)
+                         (list "-an" (expand-file-name outfile))))))
+    (set-process-sentinel
+     ffmpeg-proc
+     (lambda (proc event)
+       (if (eq 'exit (process-status proc))
+           (message "Converted: %s" outfile)
+         (message "Failed to convert: %s"outfile))))
     (ffmpeg-crop--next)))
 
 ;; Prefix commands
