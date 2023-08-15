@@ -30,6 +30,14 @@
   :init-value (lambda (obj) (oset obj value "scale='trunc(iw/2):trunc(ih/2)'"))
   :description "Video filter")
 
+(transient-define-argument ffmpeg-crop--a ()
+  "Ending at time"
+  :class 'transient-switch
+  :key "a"
+  :argument "-an "
+  :init-value (lambda (obj) (oset obj value "-an"))
+  :description "Audio filter")
+
 (transient-define-infix ffmpeg-crop--add-description ()
   :description "Video description"
   :class 'transient-lisp-variable
@@ -78,10 +86,12 @@
           (apply #'start-process
                  "ffmpeg" "ffmpeg-crop" "/usr/bin/ffmpeg"
                  (append (mapcan (lambda (arg)
-                                   (string-match "^\\([^[:space:]]+\\) \\(.*\\)" arg)
-                                   (list (match-string 1 arg) (match-string 2 arg)))
+                                   (if (string-match "^\\([^[:space:]]+\\) \\(.*\\)" arg)
+                                       (list (match-string 1 arg) (match-string 2 arg))
+                                     (list arg)))
                                  args)
-                         (list "-an" (expand-file-name outfile))))))
+                         (list (expand-file-name outfile))))))
+    (message "Started conversion: %s" outfile)
     (set-process-sentinel
      ffmpeg-proc
      (lambda (proc event)
@@ -102,7 +112,8 @@
     ("ss" "From time " "-ss " :class transient-option)
     ("to" "Until time" "-to " :class transient-option)]
    ["Filter"
-    ("vf" ffmpeg-crop--vf)]]
+    ("vf" ffmpeg-crop--vf)
+    ("a"  ffmpeg-crop--a)]]
   ["Convert"
    [("RET" "Convert" ffmpeg-crop--run)
     ("w" "Copy cmd" ffmpeg-crop--copy :transient t)]
