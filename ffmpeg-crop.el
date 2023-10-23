@@ -84,7 +84,7 @@
          (ffmpeg-proc 
           
           (apply #'start-process
-                 "ffmpeg" "ffmpeg-crop" "/usr/bin/ffmpeg"
+                 "ffmpeg" "ffmpeg-crop" "ffmpeg"
                  (append (mapcan (lambda (arg)
                                    (if (string-match "^\\([^[:space:]]+\\) \\(.*\\)" arg)
                                        (list (match-string 1 arg) (match-string 2 arg))
@@ -126,7 +126,7 @@
   (let ((infile (car infiles)))
     (start-process (concat "mpv " (file-name-base infile))
                    (concat "mpv " (file-name-base infile))
-                   "/usr/bin/mpv" "--osd-level=3" "--mute=yes"
+                   "mpv" "--osd-level=3" "--mute=yes"
                    (expand-file-name infile)))
   (transient-setup 'ffmpeg-crop))
 
