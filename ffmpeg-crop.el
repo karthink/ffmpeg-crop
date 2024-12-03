@@ -56,6 +56,16 @@
   (interactive)
   (message "%s" (transient-args 'ffmpeg-crop)))
 
+(transient-define-suffix ffmpeg-crop--replay ()
+  "Replay current video in mpv."
+  :transient t
+  (interactive)
+  (let ((infile (car ffmpeg-crop-infiles)))
+    (start-process (concat "mpv " (file-name-base infile))
+                   (concat "mpv " (file-name-base infile))
+                   "mpv" "--osd-level=3" "--mute=yes" "--start=5"
+                   (expand-file-name infile))))
+
 (transient-define-suffix ffmpeg-crop--next ()
   "Cancel this file and operate on the next one."
   (interactive)
@@ -117,7 +127,8 @@
   ["Convert"
    [("RET" "Convert" ffmpeg-crop--run)
     ("w" "Copy cmd" ffmpeg-crop--copy :transient t)]
-   [("n" "Next file" ffmpeg-crop--next :if (lambda () (cdr ffmpeg-crop-infiles)))]]
+   [("m" "Replay video" ffmpeg-crop--replay)
+    ("n" "Next file" ffmpeg-crop--next :if (lambda () (cdr ffmpeg-crop-infiles)))]]
   (interactive (list (completing-read-multiple
                       "Videos: "
                       #'completion--file-name-table
