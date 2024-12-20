@@ -66,6 +66,24 @@
                    "mpv" "--osd-level=3" "--mute=yes" "--start=5"
                    (expand-file-name infile))))
 
+(transient-define-suffix ffmpeg-crop--pause ()
+  "Pause video"
+  :transient t
+  (interactive)
+  (start-process "pause" nil "playerctl" "play-pause"))
+
+(transient-define-suffix ffmpeg-crop--seek-forward ()
+  ";TODO: "
+  :transient t
+  (interactive)
+  (start-process "forward" nil "playerctl" "position" "10+"))
+
+(transient-define-suffix ffmpeg-crop--seek-backward ()
+  ";TODO: "
+  :transient t
+  (interactive)
+  (start-process "backward" nil "playerctl" "position" "10-"))
+
 (transient-define-suffix ffmpeg-crop--next ()
   "Cancel this file and operate on the next one."
   (interactive)
@@ -117,18 +135,36 @@
   "Downsample a video and process it."
   ["Input File"
    (ffmpeg-crop--i)
-   ("h" ffmpeg-crop--add-description)]
+   ("d" ffmpeg-crop--add-description)]
   [["Times"
     ("ss" "From time " "-ss " :class transient-option)
     ("to" "Until time" "-to " :class transient-option)]
    ["Filter"
     ("vf" ffmpeg-crop--vf)
     ("a"  ffmpeg-crop--a)]]
-  ["Convert"
-   [("RET" "Convert" ffmpeg-crop--run)
-    ("w" "Copy cmd" ffmpeg-crop--copy :transient t)]
-   [("m" "Replay video" ffmpeg-crop--replay)
-    ("n" "Next file" ffmpeg-crop--next :if (lambda () (cdr ffmpeg-crop-infiles)))]]
+  [["Convert"
+    ("RET" "Convert" ffmpeg-crop--run)
+    ("w" "Copy cmd" ffmpeg-crop--copy :transient t)
+    ("n" "Next file" ffmpeg-crop--next :if (lambda () (cdr ffmpeg-crop-infiles)))]
+   [:pad-keys t
+    "Control"
+    ("h"   "back 5"
+     (lambda () (interactive)
+       (start-process
+        "back5" nil
+        "playerctl" "position" "5-"))
+     :transient t)
+    ("j"   "back 10"  ffmpeg-crop--seek-backward)
+    ("k"   "forward 10" ffmpeg-crop--seek-forward)
+    ("l"   "Forward 5"
+     (lambda () (interactive)
+       (start-process
+        "back5" nil
+        "playerctl" "position" "5+"))
+     :transient t)]
+   [""
+    ("SPC" "Pause" ffmpeg-crop--pause)
+    ("m" "Replay video" ffmpeg-crop--replay)]]
   (interactive (list (completing-read-multiple
                       "Videos: "
                       #'completion--file-name-table
